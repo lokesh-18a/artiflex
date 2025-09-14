@@ -1,0 +1,43 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Welcome to Artiflex{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1>Discover Unique Artisan Crafts</h1>
+    <p class="lead">Handmade with love, powered by stories.</p>
+</div>
+{% if categorized_products %}
+<div class="category-browse-section text-center mb-5">
+    <h3 class="mb-4">Browse by Category</h3>
+    <div>
+        {% for category_name in categorized_products.keys() %}
+            <a href="/category/{{ category_name }}" class="btn btn-outline-secondary btn-lg m-2">
+                {{ category_name }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+<hr class="mb-5">
+{% endif %}
+<!-- This is the new categorized display loop -->
+{% if categorized_products %}
+    {% for category_name, products_in_category in categorized_products.items() %}
+        <div class="category-section mb-5">
+            <h2 class="mb-3 pb-2 border-bottom">{{ category_name }}</h2>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                {% for product in products_in_category %}
+                <div class="col">
+                    {% include "partials/product_card.html" %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        <p>No products available at the moment. Please check back later.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

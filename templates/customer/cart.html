@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+{% block title %}Your Cart{% endblock %}
+{% block content %}
+<h2>Your Shopping Cart</h2>
+
+{% if cart_items %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="/static/uploads/{{ item.product.image_filename }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3">
+                            <div>
+                                <strong>{{ item.product.name }}</strong><br>
+                                <small class="text-muted">{{ item.product.category }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td class="text-end">{{ "%.2f"|format(item.product.price_usd * conversion_rate) }} {{ currency }}</td>
+                    <td class="text-end">{{ "%.2f"|format(item.product.price_usd * item.quantity * conversion_rate) }} {{ currency }}</td>
+                    <td class="text-end">
+                        <form action="/customer/cart/remove/{{ item.id }}" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <h4>Total: {{ "%.2f"|format(total * conversion_rate) }} {{ currency }}</h4>
+        <form action="/customer/checkout" method="post">
+            <button type="submit" class="btn btn-success btn-lg">Proceed to Checkout</button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    Your cart is empty. <a href="/" class="alert-link">Start shopping!</a>
+</div>
+{% endif %}
+{% endblock %}

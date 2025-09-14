@@ -1,0 +1,49 @@
+{% extends "layouts/base.html" %}
+{% block title %}Review & Finalize Product{% endblock %}
+{% block content %}
+<h2>Review Your Product - Step 2/2</h2>
+<p>Our AI has generated a description and suggested a price. Review, edit if needed, and finalize your listing.</p>
+<hr>
+<div class="row">
+    <div class="col-md-8">
+        <form action="/artist/products/save" method="post">
+            <!-- Hidden fields to pass data from step 1 -->
+            <input type="hidden" name="name" value="{{ product_data.name }}">
+            <input type="hidden" name="category" value="{{ product_data.category }}">
+            <input type="hidden" name="artist_notes" value="{{ product_data.artist_notes }}">
+            <input type="hidden" name="image_filename" value="{{ product_data.image_filename }}">
+
+            <div class="mb-3">
+                <label for="ai_generated_description" class="form-label"><strong>AI-Generated Description</strong> (Editable)</label>
+                <textarea class="form-control" id="ai_generated_description" name="ai_generated_description" rows="10">{{ ai_description }}</textarea>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="mb-3">
+                        <label for="price_usd" class="form-label"><strong>Final Price (USD)</strong></label>
+                        <input type="number" step="0.01" class="form-control" id="price_usd" name="price_usd" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <label for="stock" class="form-label"><strong>Stock Quantity</strong></label>
+                        <input type="number" class="form-control" id="stock" name="stock" value="1" required>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">Publish Product</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title">AI Pricing Suggestion</h5>
+                <p class="card-text">{{ ai_price_suggestion }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <img src="/static/uploads/{{ product_data.image_filename }}" class="img-fluid rounded" alt="Product Preview">
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!-- templates/partials/product_card.html - IMAGE & ALIGNMENT FIX -->
+<div class="card h-100">
+    <a href="/product/{{ product.id }}">
+        <!-- No change to the image tag itself -->
+        <img src="{{ url_for('static', path='/uploads/' + product.image_filename) }}" class="card-img-top" alt="{{ product.name }}">
+    </a>
+    
+    <!-- THE FIX IS HERE: We make the card-body a flex container -->
+    <div class="card-body d-flex flex-column"> 
+        
+        <!-- This new div wraps the content that should stay at the top -->
+        <div>
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text text-muted">by {{ product.owner.full_name }}</p>
+            <p class="card-text fw-bold fs-5">
+                {{ "%.2f"|format(product.price_usd * conversion_rate) }}
+                <span class="fs-6">{{ currency }}</span>
+            </p>
+        </div>
+
+        <!-- 
+            This div is now a flex item that gets pushed to the bottom
+            thanks to `d-flex flex-column` on the parent and `mt-auto` here.
+        -->
+        <div class="mt-auto pt-3"> <!-- Added `mt-auto` (margin-top: auto) and some top padding -->
+            <a href="/product/{{ product.id }}" class="btn btn-outline-secondary btn-sm">View Details</a>
+            
+            {% if request.session.get('user') %}
+            <form action="/customer/cart/add/{{ product.id }}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>

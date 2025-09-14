@@ -1,0 +1,26 @@
+{% extends "layouts/base.html" %}
+{% block title %}Add New Product{% endblock %}
+{% block content %}
+<h2>Add New Product - Step 1/2</h2>
+<p>Provide the basic details for your craft. Our AI will help you with the rest.</p>
+<hr>
+<form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="name" class="form-label">Product Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <input type="text" class="form-control" id="category" name="category" placeholder="e.g., Pottery, Woodwork, Jewelry" required>
+    </div>
+    <div class="mb-3">
+        <label for="artist_notes" class="form-label">Artist's Notes</label>
+        <textarea class="form-control" id="artist_notes" name="artist_notes" rows="4" placeholder="Describe the materials used, your inspiration, the time it took, etc. The more detail, the better the AI-generated story will be." required></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="image" class="form-label">Product Image</label>
+        <input class="form-control" type="file" id="image" name="image" accept="image/*" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Description & Price</button>
+</form>
+{% endblock %}

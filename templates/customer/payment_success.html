@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+{% block title %}Thank You!{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4">Thank You For Your Order!</h1>
+    <p class="lead">Your order #{{ order.id }} has been placed successfully.</p>
+    <hr>
+    <p>We've sent a confirmation to your email. You can track the status of your order on your orders page.</p>
+    <div class="mt-4">
+        <a href="/" class="btn btn-primary btn-lg">Continue Shopping</a>
+        <a href="/customer/orders" class="btn btn-secondary btn-lg">View My Orders</a>
+    </div>
+</div>
+{% endblock %}
