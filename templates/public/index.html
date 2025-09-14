@@ -3,41 +3,54 @@
 {% block title %}Welcome to Artiflex{% endblock %}
 
 {% block content %}
-<div class="text-center mb-5">
-    <h1>Discover Unique Artisan Crafts</h1>
-    <p class="lead">Handmade with love, powered by stories.</p>
+<!-- 1. Header is handled by base.html -->
+<!-- We add a hero/welcome section -->
+<div class="text-center p-5 mb-5 bg-light rounded-3">
+    <h1 class="display-4 fw-bold">Artistry Unleashed</h1>
+    <p class="lead">Discover unique, handcrafted items and the stories behind them.</p>
 </div>
-{% if categorized_products %}
-<div class="category-browse-section text-center mb-5">
-    <h3 class="mb-4">Browse by Category</h3>
-    <div>
-        {% for category_name in categorized_products.keys() %}
-            <a href="/category/{{ category_name }}" class="btn btn-outline-secondary btn-lg m-2">
+
+
+<!-- 2. Trending Items Section -->
+<div class="mb-5">
+    <h2 class="mb-4 pb-2 border-bottom">Trending Items</h2>
+    {% if trending_products %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for product in trending_products %}
+            <div class="col">
+                {% include "partials/product_card.html" with context %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No trending items to show right now.</p>
+    {% endif %}
+</div>
+
+
+<!-- 3. Categories Section -->
+<div class="mb-5">
+    <h2 class="mb-4 pb-2 border-bottom">Browse by Category</h2>
+    <div class="d-flex flex-wrap justify-content-center">
+        {% for category_name in categories %}
+            <a href="/category/{{ category_name }}" class="btn btn-lg btn-outline-dark m-2 flex-grow-1">
                 {{ category_name }}
             </a>
         {% endfor %}
     </div>
 </div>
-<hr class="mb-5">
-{% endif %}
-<!-- This is the new categorized display loop -->
-{% if categorized_products %}
-    {% for category_name, products_in_category in categorized_products.items() %}
-        <div class="category-section mb-5">
-            <h2 class="mb-3 pb-2 border-bottom">{{ category_name }}</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-                {% for product in products_in_category %}
-                <div class="col">
-                    {% include "partials/product_card.html" %}
-                </div>
-                {% endfor %}
-            </div>
+
+
+<!-- 4. Profiles of the Artisans Section -->
+<div>
+    <h2 class="mb-4 pb-2 border-bottom">Featured Artisans</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for artist in artists %}
+        <div class="col">
+            {% include "partials/artisan_card.html" %}
         </div>
-    {% endfor %}
-{% else %}
-    <div class="alert alert-info">
-        <p>No products available at the moment. Please check back later.</p>
+        {% endfor %}
     </div>
-{% endif %}
+</div>
 
 {% endblock %}
