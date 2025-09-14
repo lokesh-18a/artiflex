@@ -3,6 +3,7 @@ import models, schemas
 from passlib.context import CryptContext
 from typing import List
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -124,3 +125,40 @@ def update_order_status(db: Session, order_id: int, artist_id: int, new_status: 
 
 def get_products_by_category(db: Session, category_name: str):
     return db.query(models.Product).filter(models.Product.category == category_name).all()
+# crud.py - Add these new functions
+
+from sqlalchemy import func
+from sqlalchemy.orm import joinedload # Make sure this is imported
+
+# ... existing functions ...
+
+def get_trending_products(db: Session, limit: int = 4):
+    """
+    Gets products ordered by the number of times they have been sold.
+    """
+    return (
+        db.query(models.Product)
+        .join(models.OrderItem)
+        .group_by(models.Product.id)
+        .order_by(func.sum(models.OrderItem.quantity).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_all_categories(db: Session):
+    """
+    Gets a distinct list of all category names.
+    """
+    return db.query(models.Product.category).distinct().all()
+
+def get_all_artists(db: Session, limit: int = 8):
+    """
+    Gets a list of all users with the 'artist' role.
+    """
+    return (
+        db.query(models.User)
+        .filter(models.User.role == models.UserRole.ARTIST)
+        .options(joinedload(models.User.products)) # Optional: load products for performance
+        .limit(limit)
+        .all()
+    )

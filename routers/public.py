@@ -12,21 +12,25 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
+# routers/public.py
+
+@router.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
     # This is the safe pattern we established
     user = request.session.get("user")
-    products = crud.get_products(db, limit=30) # Fetch more products to have enough for categories
-    # Group products by their category
-    categorized_products = defaultdict(list)
-    for product in products:
-        if product.category: # Ensure product has a category
-            categorized_products[product.category].append(product)
-    # ==========================
+    
+    # === NEW LOGIC: Fetch all the data for our dynamic homepage ===
+    trending_products = crud.get_trending_products(db, limit=4)
+    categories = [c[0] for c in crud.get_all_categories(db)] # Extract names from tuples
+    artists = crud.get_all_artists(db, limit=8)
+    # =============================================================
     
     context = {
         "request": request,
         "user": user,
-        "categorized_products": categorized_products, # Pass the new grouped dictionary
+        "trending_products": trending_products,
+        "categories": categories,
+        "artists": artists,
         "currency": "INR",
         "conversion_rate": 83.0
     }
