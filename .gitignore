@@ -27,3 +27,14 @@ Thumbs.db
 # Environment variables
 .env
 .flaskenv
+
+# Logs
+*.log
+
+# Coverage / Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Git attributes
+.gitattributes
