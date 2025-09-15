@@ -1,97 +1,108 @@
+<!-- C:\dev\artiflex\templates\artist\dashboard.html -->
 {% extends "layouts/base.html" %}
 {% block title %}Artist Dashboard{% endblock %}
 {% block content %}
+
+{% set active_tab = request.query_params.get('tab', 'orders') %} <!-- Default to orders tab -->
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Artist Dashboard</h2>
-    <a href="/artist/products/new" class="btn btn-primary">Add New Product</a>
+    <h2>Welcome, {{ request.session.get('user', {}).get('full_name', 'Artist') }}</h2>
+    <a href="/artist/manage/products/new" class="btn btn-primary">Add New Product</a>
 </div>
 
-<div class="row">
-    <!-- Summary Cards -->
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'orders' %}active{% endif %}" href="/artist/dashboard?tab=orders">Orders</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'products' %}active{% endif %}" href="/artist/dashboard?tab=products">My Products</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'income' %}active{% endif %}" href="/artist/dashboard?tab=income">Income</a>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div>
+    <!-- ORDERS TAB -->
+    {% if active_tab == 'orders' %}
+    <div id="orders">
+        <h3>Recent Orders</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ order.customer.full_name }}</td>
+                        <td><span class="badge bg-secondary">{{ order.status.value }}</span></td>
+                        <td>
+                            <form action="/artist/manage/orders/update/{{ order.id }}" method="post" class="d-flex">
+                                <select name="status" class="form-select form-select-sm me-2">
+                                    <option value="Pending" {% if order.status.value == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Shipped" {% if order.status.value == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="Delivered" {% if order.status.value == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5">You have no orders yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- PRODUCTS TAB -->
+    {% if active_tab == 'products' %}
+    <div id="products">
+        <h3>My Products</h3>
+        <table class="table">
+            <thead>
+                <tr><th>Name</th><th>Price (INR)</th><th>Stock</th></tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>₹{{ "%.2f"|format(product.price_usd * 83.0) }}</td>
+                    <td>{{ product.stock }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">You have not listed any products yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- INCOME TAB -->
+    {% if active_tab == 'income' %}
+    <div id="income">
+        <h3>Income Summary</h3>
+        <div class="card text-white bg-success mb-3" style="max-width: 18rem;">
             <div class="card-header">Total Income</div>
             <div class="card-body">
-                <h5 class="card-title">${{ "%.2f"|format(total_income) }}</h5>
+                <h5 class="card-title">₹{{ "%.2f"|format(total_income) }}</h5>
+                <p class="card-text">This is your total revenue from all completed sales.</p>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-header">Products Listed</div>
-            <div class="card-body">
-                <h5 class="card-title">{{ products|length }}</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-dark bg-warning mb-3">
-            <div class="card-header">Pending Orders</div>
-            <div class="card-body">
-                <h5 class="card-title">{{ orders|selectattr('status', 'equalto', 'Pending')|list|length }}</h5>
-            </div>
-        </div>
-    </div>
+    {% endif %}
 </div>
 
-<hr>
-
-<!-- Recent Orders Section -->
-<h3>Recent Orders</h3>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>#{{ order.id }}</td>
-                <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
-                <td>{{ order.customer.full_name }}</td>
-                <td><span class="badge bg-secondary">{{ order.status.value }}</span></td>
-                <td>
-                    <form action="/artist/orders/update/{{ order.id }}" method="post" class="d-flex">
-                        <select name="status" class="form-select form-select-sm me-2">
-                            <option value="Pending" {% if order.status.value == 'Pending' %}selected{% endif %}>Pending</option>
-                            <option value="Shipped" {% if order.status.value == 'Shipped' %}selected{% endif %}>Shipped</option>
-                            <option value="Delivered" {% if order.status.value == 'Delivered' %}selected{% endif %}>Delivered</option>
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5">No orders found.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<hr>
-
-<!-- My Products Section -->
-<h3>My Products</h3>
-<table class="table">
-    <thead>
-        <tr><th>Name</th><th>Price (USD)</th><th>Stock</th></tr>
-    </thead>
-    <tbody>
-        {% for product in products %}
-        <tr>
-            <td>{{ product.name }}</td>
-            <td>${{ "%.2f"|format(product.price_usd) }}</td>
-            <td>{{ product.stock }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="3">You have not listed any products yet.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}

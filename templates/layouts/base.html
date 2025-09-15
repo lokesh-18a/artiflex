@@ -22,18 +22,37 @@
                     {% endif %}
                 </ul>
                 <div class="d-flex align-items-center">
+                   <!-- templates/layouts/base.html - Replace the user logic block -->
+
                     {% if request.session.get('user') %}
-                        <!-- THE FIX IS HERE: Only show Cart/Orders buttons if the user is a CUSTOMER -->
-                        {% if request.session['user']['role'] == 'customer' %}
-                            <a href="/customer/cart" class="btn btn-outline-primary me-2">Cart</a>
-                            <a href="/customer/orders" class="btn btn-outline-secondary me-2">My Orders</a>
+                        {% set user_role = request.session['user']['role'] %}
+                        <!-- ARTIST-SPECIFIC NAVBAR -->
+                        {% if user_role == 'artist' %}
+                            <div class="d-flex align-items-center w-100">
+                                    
+                                    <!-- Profile/Logout links on the right -->
+                                    <div class="ms-auto d-flex align-items-center">
+                                        <a href="/artist/manage/dashboard" class="btn btn-outline-primary me-3">Dashboard</a>
+                                        <a href="/artist/manage/profile/edit" class="btn btn-outline-secondary me-3">Profile</a>
+                                        <a href="/logout" class="btn btn-primary">Logout</a>
+                                    </div>
+                                </div>
+                        <!-- CUSTOMER-SPECIFIC NAVBAR -->
+                        {% elif user_role == 'customer' %}
+                            <div class="d-flex align-items-center">
+                                <a href="/customer/cart" class="btn btn-outline-primary me-2">Cart</a>
+                                <a href="/customer/orders" class="btn btn-outline-secondary me-2">My Orders</a>
+                                <span class="navbar-text me-3">Welcome, {{ request.session['user']['full_name'] }}</span>
+                                <a href="/logout" class="btn btn-secondary">Logout</a>
+                            </div>
                         {% endif %}
-                        <span class="navbar-text me-3">Welcome, {{ request.session['user']['full_name'] }}</span>
-                        <a href="/logout" class="btn btn-secondary">Logout</a>
-                        {% else %}
-                            <a href="/login" class="btn btn-primary me-2">Login</a>
-                            <a href="/register" class="btn btn-secondary">Register</a>
-                        {% endif %}
+                    {% else %}
+    <!-- GUEST NAVBAR -->
+    <div class="d-flex align-items-center">
+        <a href="/login" class="btn btn-primary me-2">Login</a>
+        <a href="/register" class="btn btn-secondary">Register</a>
+    </div>
+{% endif %}
                 </div>
             </div>
         </div>

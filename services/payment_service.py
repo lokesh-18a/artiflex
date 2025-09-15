@@ -31,6 +31,7 @@ def create_checkout_session(cart_items: List[CartItem]):
             success_url=YOUR_DOMAIN + '/customer/payment/success',
             cancel_url=YOUR_DOMAIN + '/customer/cart',
         )
-        return session.url
+        return session
     except Exception as e:
         return str(e)
+        return None

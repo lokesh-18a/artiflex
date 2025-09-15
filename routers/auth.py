@@ -23,7 +23,10 @@ async def login_user(request: Request, db: Session = Depends(get_db), email: str
     
     # This works because the middleware is correctly installed in main.py
     request.session["user"] = {"id": user.id, "email": user.email, "full_name": user.full_name, "role": user.role.value}
-    return RedirectResponse(url="/", status_code=303)
+    if user.role == models.UserRole.ARTIST:
+        return RedirectResponse(url="/artist/manage/dashboard", status_code=303)
+    else:
+        return RedirectResponse(url="/", status_code=303)
 
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):

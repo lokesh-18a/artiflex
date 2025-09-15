@@ -118,3 +118,103 @@ main.container {
     padding-top: 2rem;
     padding-bottom: 4rem;
 }
+/* static/css/custom.css - Add these styles at the end */
+
+/* 7. NEW HOMEPAGE SECTIONS
+   ========================================================================== */
+
+.section-title {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+}
+
+.horizontal-scroll-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 1.5rem; /* Space for the scrollbar */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+}
+
+/* Hide the ugly scrollbar */
+.horizontal-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+}
+.horizontal-scroll-wrapper {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scroll-item {
+    flex: 0 0 auto;
+    margin-right: 1.5rem;
+    width: 280px; /* Width for trending product cards */
+}
+
+.trending-product-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
+}
+.trending-product-card:hover {
+    transform: translateY(-5px);
+}
+.trending-product-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Category Card Styling */
+.category-card-rect {
+    border-radius: 12px;
+    overflow: hidden;
+    height: 180px; /* Give a fixed height */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
+}
+.category-card-rect:hover {
+    transform: translateY(-5px);
+}
+.category-card-rect .card-img {
+    height: 100%;
+    object-fit: cover; /* Make image cover the area */
+}
+.category-card-rect .card-img-overlay {
+    background-color: rgba(0,0,0,0.45);
+    transition: background-color 0.2s ease-in-out;
+}
+.category-card-rect:hover .card-img-overlay {
+    background-color: rgba(0,0,0,0.6);
+}
+/* Artist Avatar Styling */
+.artist-scroll-item {
+    width: 150px; /* Smaller width for avatars */
+}
+.artist-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* Perfect circle */
+    object-fit: cover;
+    border: 3px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease-in-out;
+}
+.artist-avatar:hover {
+    transform: scale(1.05);
+}
+.artist-name {
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.artist-profile-pic {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}

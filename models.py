@@ -8,8 +8,11 @@ class UserRole(str, enum.Enum):
     ARTIST = "artist"
     CUSTOMER = "customer"
 
+# models.py - Update the User model
+
 class User(Base):
     __tablename__ = 'users'
+    # --- Existing fields ---
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
@@ -17,6 +20,16 @@ class User(Base):
     role = Column(Enum(UserRole), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
+    # --- NEW ARTIST PROFILE FIELDS ---
+    profile_picture = Column(String, nullable=True, default='default_avatar.png') # Filename
+    studio_name = Column(String, nullable=True)
+    bio = Column(String, nullable=True) # This is the description
+    skills = Column(String, nullable=True) # We'll store this as a comma-separated string, e.g., "Pottery,Glazing,Sculpting"
+    location = Column(String, nullable=True) # e.g., "City, Country"
+    phone_contact = Column(String, nullable=True)
+    average_rating = Column(Float, default=0.0) # For the future rating system
+    
+    # --- Existing relationships ---
     products = relationship("Product", back_populates="owner")
     orders = relationship("Order", back_populates="customer")
 
@@ -47,6 +60,12 @@ class Order(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING)
     total_amount_usd = Column(Float)
+
+    shipping_address_line1 = Column(String)
+    shipping_city = Column(String)
+    shipping_postal_code = Column(String)
+    shipping_country = Column(String)
+    payment_method = Column(String) # Will store "COD" or "Online"
     
     customer = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")

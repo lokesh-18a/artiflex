@@ -43,7 +43,7 @@
     </div>
     <div class="card-footer d-flex justify-content-between align-items-center">
         <h4>Total: {{ "%.2f"|format(total * conversion_rate) }} {{ currency }}</h4>
-        <form action="/customer/checkout" method="post">
+        <form action="/customer/checkout-initialize" method="post">
             <button type="submit" class="btn btn-success btn-lg">Proceed to Checkout</button>
         </form>
     </div>

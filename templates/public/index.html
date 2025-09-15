@@ -3,41 +3,69 @@
 {% block title %}Welcome to Artiflex{% endblock %}
 
 {% block content %}
-<div class="text-center mb-5">
-    <h1>Discover Unique Artisan Crafts</h1>
-    <p class="lead">Handmade with love, powered by stories.</p>
-</div>
-{% if categorized_products %}
-<div class="category-browse-section text-center mb-5">
-    <h3 class="mb-4">Browse by Category</h3>
-    <div>
-        {% for category_name in categorized_products.keys() %}
-            <a href="/category/{{ category_name }}" class="btn btn-outline-secondary btn-lg m-2">
-                {{ category_name }}
-            </a>
-        {% endfor %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="text-center p-5 mb-5 bg-light rounded-3">
+        <h1 class="display-4">Discover Unique Artisan Crafts</h1>
+        <p class="lead">Handmade with love, powered by stories from artists around the world.</p>
     </div>
-</div>
-<hr class="mb-5">
-{% endif %}
-<!-- This is the new categorized display loop -->
-{% if categorized_products %}
-    {% for category_name, products_in_category in categorized_products.items() %}
-        <div class="category-section mb-5">
-            <h2 class="mb-3 pb-2 border-bottom">{{ category_name }}</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-                {% for product in products_in_category %}
-                <div class="col">
-                    {% include "partials/product_card.html" %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    {% endfor %}
-{% else %}
-    <div class="alert alert-info">
-        <p>No products available at the moment. Please check back later.</p>
-    </div>
-{% endif %}
 
+    <!-- 1. TRENDING PRODUCTS SECTION -->
+    <div class="homepage-section mb-5">
+        <h2 class="section-title">Trending Products</h2>
+        <div class="horizontal-scroll-wrapper">
+            {% for product in trending_products %}
+                <div class="scroll-item">
+                    <!-- We use a simplified product card here -->
+                    <a href="/product/{{ product.id }}" class="text-decoration-none text-dark">
+                        <div class="card h-100 trending-product-card">
+                            <img src="{{ url_for('static', path='/uploads/' + product.image_filename) }}" class="card-img-top" alt="{{ product.name }}">
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate">{{ product.name }}</h6>
+                                <p class="card-text fw-bold">₹{{ "%.2f"|format(product.price_usd * conversion_rate) }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 2. CATEGORIES SECTION -->
+    <div class="homepage-section mb-5">
+        <h2 class="section-title">Browse by Category</h2>
+        <div class="horizontal-scroll-wrapper">
+            {% for category_name in categories %}
+                <div class="scroll-item" style="width: 320px;"> <!-- Give categories a bit more width -->
+                    <a href="/category/{{ category_name }}" class="text-decoration-none">
+                        <div class="card category-card-rect text-white">
+                            <img src="https://source.unsplash.com/400x250/?{{ category_name.lower() }}" class="card-img" alt="{{ category_name }}">
+                            <div class="card-img-overlay d-flex align-items-center justify-content-center">
+                                <h4 class="card-title">{{ category_name }}</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 3. FEATURED ARTISTS SECTION -->
+    <div class="homepage-section mb-5">
+        <h2 class="section-title">Featured Artists</h2>
+        <div class="horizontal-scroll-wrapper">
+            {% for artist in top_artists %}
+                <div class="scroll-item artist-scroll-item">
+                    <!-- We need a public artist profile page for this link to work -->
+                    <a href="/artist/{{ artist.id }}" class="text-decoration-none text-dark">
+                        <div class="text-center">
+                            <img src="{{ url_for('static', path='/uploads/profiles/' + artist.profile_picture) }}" class="artist-avatar mb-2" alt="{{ artist.full_name }}">
+                            <h6 class="artist-name">{{ artist.full_name }}</h6>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,37 +1,38 @@
-# routers/public.py - The Stable Pattern
+# routers/public.py - With all homepage links now working
 
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from database import get_db
 import crud
-from collections import defaultdict
+import models
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
-    # This is the safe pattern we established
+    trending_products = crud.get_products(db, limit=10)
+    all_categories = db.query(models.Product.category).distinct().all()
+    categories = [category[0] for category in all_categories if category[0]]
+    top_artists = db.query(models.User).filter(models.User.role == models.UserRole.ARTIST).limit(8).all()
+
     user = request.session.get("user")
-    products = crud.get_products(db, limit=30) # Fetch more products to have enough for categories
-    # Group products by their category
-    categorized_products = defaultdict(list)
-    for product in products:
-        if product.category: # Ensure product has a category
-            categorized_products[product.category].append(product)
-    # ==========================
-    
     context = {
         "request": request,
         "user": user,
-        "categorized_products": categorized_products, # Pass the new grouped dictionary
+        "trending_products": trending_products,
+        "categories": categories,
+        "top_artists": top_artists,
         "currency": "INR",
         "conversion_rate": 83.0
     }
     return templates.TemplateResponse("public/index.html", context)
 
+# ===============================================
+# NEW: PRODUCT DETAIL PAGE ROUTE
+# ===============================================
 @router.get("/product/{product_id}", response_class=HTMLResponse)
 async def product_detail(request: Request, product_id: int, db: Session = Depends(get_db)):
     user = request.session.get("user")
@@ -48,9 +49,11 @@ async def product_detail(request: Request, product_id: int, db: Session = Depend
     }
     return templates.TemplateResponse("public/product_detail.html", context)
 
+# ===============================================
+# NEW: CATEGORY PAGE ROUTE
+# ===============================================
 @router.get("/category/{category_name}", response_class=HTMLResponse)
 async def view_category(request: Request, category_name: str, db: Session = Depends(get_db)):
-    # This is a new CRUD function we need to create
     products = crud.get_products_by_category(db, category_name=category_name)
     
     user = request.session.get("user")
@@ -58,8 +61,30 @@ async def view_category(request: Request, category_name: str, db: Session = Depe
         "request": request,
         "user": user,
         "products": products,
-        "category_name": category_name, # Pass the name to the template
+        "category_name": category_name,
         "currency": "INR",
         "conversion_rate": 83.0
     }
     return templates.TemplateResponse("public/category_page.html", context)
+
+# ===============================================
+# NEW: PUBLIC ARTIST PROFILE PAGE ROUTE
+# ===============================================
+@router.get("/artist/{artist_id}", response_class=HTMLResponse)
+async def view_artist_profile(request: Request, artist_id: int, db: Session = Depends(get_db)):
+    artist = db.query(models.User).filter(models.User.id == artist_id, models.User.role == models.UserRole.ARTIST).first()
+    if not artist:
+        return HTMLResponse("Artist not found", status_code=404)
+    
+    products = crud.get_products_by_owner(db, owner_id=artist_id)
+    user = request.session.get("user")
+    
+    context = {
+        "request": request,
+        "user": user,
+        "artist": artist,
+        "products": products,
+        "currency": "INR",
+        "conversion_rate": 83.0
+    }
+    return templates.TemplateResponse("public/artist_profile.html", context)

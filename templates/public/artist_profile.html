@@ -1,0 +1,39 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ artist.studio_name or artist.full_name }} - Artiflex{% endblock %}
+{% block content %}
+<!-- Artist Profile Header -->
+<div class="card p-4 mb-5 shadow-sm">
+    <div class="row align-items-center">
+        <div class="col-md-3 text-center">
+            <img src="{{ url_for('static', path='/uploads/profiles/' + artist.profile_picture) }}" alt="{{ artist.full_name }}" class="artist-profile-pic">
+        </div>
+        <div class="col-md-9">
+            <h1 class="display-5">{{ artist.studio_name or artist.full_name }}</h1>
+            <p class="lead text-muted">{{ artist.location or 'Location not specified' }}</p>
+            <p>{{ artist.bio or 'This artist has not written a bio yet.' }}</p>
+            <div>
+                {% if artist.skills %}
+                    {% for skill in artist.skills.split(',') %}
+                        <span class="badge bg-secondary me-1">{{ skill.strip() }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Artist's Products -->
+<h3>Products by this Artist</h3>
+<hr>
+{% if products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mt-3">
+        {% for product in products %}
+        <div class="col">
+            {% include "partials/product_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info mt-3"><p>This artist has not listed any products yet.</p></div>
+{% endif %}
+{% endblock %}

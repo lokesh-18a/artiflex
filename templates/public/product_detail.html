@@ -1,38 +1,17 @@
 {% extends "layouts/base.html" %}
-
 {% block title %}{{ product.name }}{% endblock %}
-
 {% block content %}
-<!-- Use Bootstrap's Grid System -->
-<div class="row g-5">  <!-- g-5 adds a nice gap between columns -->
-
-    <!-- Column 1: Product Image -->
+<div class="row g-5">
     <div class="col-md-7">
-        <!-- 
-            THE FIX IS HERE: 
-            - 'img-fluid' makes the image responsive and fit its container.
-            - 'product-detail-img' is our custom class for styling (like shadows/borders).
-        -->
-        <img src="{{ url_for('static', path='/uploads/' + product.image_filename) }}" 
-             alt="{{ product.name }}" 
-             class="img-fluid product-detail-img">
+        <img src="{{ url_for('static', path='/uploads/' + product.image_filename) }}" alt="{{ product.name }}" class="img-fluid product-detail-img">
     </div>
-
-    <!-- Column 2: Product Information -->
     <div class="col-md-5">
         <h1 class="display-5 fw-bold">{{ product.name }}</h1>
-        <p class="lead text-muted">
-            by <a href="#" class="text-decoration-none">{{ product.owner.full_name }}</a>
-        </p>
+        <p class="lead text-muted">by <a href="/artist/{{ product.owner.id }}" class="text-decoration-none">{{ product.owner.full_name }}</a></p>
         <hr>
-
-        <h3 class="my-4">
-            {{ "%.2f"|format(product.price_usd * conversion_rate) }} {{ currency }}
-        </h3>
-        
+        <h3 class="my-4">₹{{ "%.2f"|format(product.price_usd * conversion_rate) }}</h3>
         {% if product.stock > 0 %}
-            <!-- Add to Cart Form -->
-            {% if request.session.get('user') and request.session['user']['role'] == 'customer' %}
+            {% if user and user.role == 'customer' %}
             <form action="/customer/cart/add/{{ product.id }}" method="post" class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg">Add to Cart</button>
             </form>
@@ -41,15 +20,9 @@
         {% else %}
             <p class="text-danger mt-2">Out of stock</p>
         {% endif %}
-        
         <hr class="my-4">
-
         <h4>Product Story</h4>
-        <!-- 'white-space: pre-wrap' preserves formatting from the AI description -->
         <p style="white-space: pre-wrap;">{{ product.ai_generated_description }}</p>
-        
-        <h5 class="mt-4">Artist's Notes</h5>
-        <p class="text-muted fst-italic">"{{ product.artist_notes }}"</p>
     </div>
 </div>
 {% endblock %}

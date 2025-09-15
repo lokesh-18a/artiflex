@@ -84,12 +84,21 @@ def clear_customer_cart(db: Session, customer_id: int):
     db.commit()
 
 # --- Order CRUD ---
-def create_order(db: Session, customer_id: int, cart_items: List[models.CartItem]):
+def create_order(db: Session, customer_id: int, cart_items: List[models.CartItem], shipping_details: dict):
     total = sum(item.product.price_usd * item.quantity for item in cart_items)
-    db_order = models.Order(customer_id=customer_id, total_amount_usd=total)
+    db_order = models.Order(
+        customer_id=customer_id, 
+        total_amount_usd=total,
+        shipping_address_line1=shipping_details["address"],
+        shipping_city=shipping_details["city"],
+        shipping_postal_code=shipping_details["zip"],
+        shipping_country=shipping_details["country"],
+        payment_method=shipping_details["paymentMethod"]
+    )
     db.add(db_order)
-    db.commit()
+    db.commit() # Commit once to get the db_order.id
     
+    # Create OrderItems and decrement stock
     for item in cart_items:
         db_order_item = models.OrderItem(
             order_id=db_order.id,
@@ -97,13 +106,12 @@ def create_order(db: Session, customer_id: int, cart_items: List[models.CartItem
             quantity=item.quantity,
             price_at_purchase_usd=item.product.price_usd
         )
-        # Decrement stock
-        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        product = item.product # Use the already loaded product
         if product:
             product.stock -= item.quantity
         db.add(db_order_item)
     
-    db.commit()
+    db.commit() # Commit again to save items and stock changes
     db.refresh(db_order)
     return db_order
 
@@ -124,3 +132,29 @@ def update_order_status(db: Session, order_id: int, artist_id: int, new_status: 
 
 def get_products_by_category(db: Session, category_name: str):
     return db.query(models.Product).filter(models.Product.category == category_name).all()
+
+def create_product(
+    db: Session, 
+    owner_id: int, 
+    name: str, 
+    category: str, 
+    artist_notes: str, 
+    ai_description: str, 
+    price: float, 
+    stock: int, 
+    image_filename: str
+):
+    db_product = models.Product(
+        name=name,
+        category=category,
+        artist_notes=artist_notes,
+        ai_generated_description=ai_description,
+        price_usd=price,
+        stock=stock,
+        image_filename=image_filename,
+        owner_id=owner_id
+    )
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return db_product   
