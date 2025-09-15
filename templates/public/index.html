@@ -3,12 +3,64 @@
 {% block title %}Welcome to Artiflex{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="container-fluid">
     <!-- Hero Section -->
     <div class="text-center p-5 mb-5 bg-light rounded-3">
         <h1 class="display-4">Discover Unique Artisan Crafts</h1>
         <p class="lead">Handmade with love, powered by stories from artists around the world.</p>
     </div>
+=======
+<!-- 1. Header is handled by base.html -->
+<!-- We add a hero/welcome section -->
+<div class="text-center p-5 mb-5 bg-light rounded-3">
+    <h1 class="display-4 fw-bold">Artistry Unleashed</h1>
+    <p class="lead">Discover unique, handcrafted items and the stories behind them.</p>
+</div>
+
+
+<!-- 2. Trending Items Section -->
+<div class="mb-5">
+    <h2 class="mb-4 pb-2 border-bottom">Trending Items</h2>
+    {% if trending_products %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for product in trending_products %}
+            <div class="col">
+                {% include "partials/product_card.html" with context %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No trending items to show right now.</p>
+    {% endif %}
+</div>
+
+
+<!-- 3. Categories Section -->
+<div class="mb-5">
+    <h2 class="mb-4 pb-2 border-bottom">Browse by Category</h2>
+    <div class="d-flex flex-wrap justify-content-center">
+        {% for category_name in categories %}
+            <a href="/category/{{ category_name }}" class="btn btn-lg btn-outline-dark m-2 flex-grow-1">
+                {{ category_name }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+
+<!-- 4. Profiles of the Artisans Section -->
+<div>
+    <h2 class="mb-4 pb-2 border-bottom">Featured Artisans</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for artist in artists %}
+        <div class="col">
+            {% include "partials/artisan_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+>>>>>>> 095761a38da40e2a5a8f283af502c6ed1b2f12c2
 
     <!-- 1. TRENDING PRODUCTS SECTION -->
     <div class="homepage-section mb-5">

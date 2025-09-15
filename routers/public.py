@@ -12,6 +12,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
+# routers/public.py
+
+@router.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
     trending_products = crud.get_products(db, limit=10)
     all_categories = db.query(models.Product.category).distinct().all()
@@ -19,12 +22,26 @@ async def home(request: Request, db: Session = Depends(get_db)):
     top_artists = db.query(models.User).filter(models.User.role == models.UserRole.ARTIST).limit(8).all()
 
     user = request.session.get("user")
+<<<<<<< HEAD
+=======
+    
+    # === NEW LOGIC: Fetch all the data for our dynamic homepage ===
+    trending_products = crud.get_trending_products(db, limit=4)
+    categories = [c[0] for c in crud.get_all_categories(db)] # Extract names from tuples
+    artists = crud.get_all_artists(db, limit=8)
+    # =============================================================
+    
+>>>>>>> 095761a38da40e2a5a8f283af502c6ed1b2f12c2
     context = {
         "request": request,
         "user": user,
         "trending_products": trending_products,
         "categories": categories,
+<<<<<<< HEAD
         "top_artists": top_artists,
+=======
+        "artists": artists,
+>>>>>>> 095761a38da40e2a5a8f283af502c6ed1b2f12c2
         "currency": "INR",
         "conversion_rate": 83.0
     }

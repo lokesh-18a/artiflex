@@ -1,0 +1,17 @@
+<!-- templates/partials/artisan_card.html -->
+<div class="card h-100 text-center artisan-card">
+    <a href="#" class="text-decoration-none text-dark">
+        <div class="p-3">
+            <img src="{{ url_for('static', path='/uploads/profiles/' + (artist.profile_picture or 'default_profile.png')) }}" 
+                 class="rounded-circle mb-3" 
+                 alt="{{ artist.studio_name or artist.full_name }}" 
+                 width="100" 
+                 height="100"
+                 style="object-fit: cover;">
+        </div>
+        <div class="card-body pt-0">
+            <h5 class="card-title">{{ artist.studio_name or artist.full_name }}</h5>
+            <p class="card-text text-muted">{{ artist.products|length }} Products</p>
+        </div>
+    </a>
+</div>
