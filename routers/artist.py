@@ -1,4 +1,19 @@
-# routers/artist.py - FULLY CORRECTED AND AUDITED
+"""
+Main Work:
+Defines FastAPI routes for artists to manage their dashboard, products, orders, and profile.
+
+Contribution to Project:
+This file provides all endpoints for the artist-facing section of the app. 
+It integrates with the database (via SQLAlchemy and crud), AI services for product descriptions/pricing, and 
+Jinja2 templates for rendering pages.
+
+Usage:
+Mounted on /artist/manage with tag "artist". Accessible only by authenticated users with role "artist".
+
+Important Variables / Objects:
+router (APIRouter) → Router for all artist management endpoints.
+templates (Jinja2Templates) → Jinja2 template renderer for HTML responses.
+"""
 
 from fastapi import APIRouter, Request, Depends, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -12,17 +27,32 @@ import services.ai_service
 import shutil
 import time
 
-# This is our correct prefix
 router = APIRouter(prefix="/artist/manage", tags=["artist"])
 templates = Jinja2Templates(directory="templates")
 
-# --- HELPER FUNCTIONS (Good practice to keep them) ---
+# --- UTILITY FUNCTIONS ---
 def flash(request: Request, message: str, category: str = "success"):
+    """
+    Stores flash messages in session for display in templates.
+    Args:
+        request (Request) → Current request.
+        message (str) → Text to display.
+        category (str) → Flash type ("success", "danger", "warning").
+    Returns: None.
+    """
     if 'flash_messages' not in request.session:
         request.session['flash_messages'] = []
     request.session['flash_messages'].append((category, message))
 
 def is_artist(request: Request):
+    """
+    Ensures current user is authenticated and has role "artist".
+    Args:
+        request (Request) → Current request.
+    Returns:
+        True if user is artist.
+        RedirectResponse if unauthorized.
+    """
     user = request.session.get("user")
     if not user or user.get("role") != "artist":
         flash(request, "Access denied. Artist area only.", "danger")
@@ -33,6 +63,15 @@ def is_artist(request: Request):
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def artist_dashboard(request: Request, db: Session = Depends(get_db), user_auth = Depends(is_artist)):
+    """
+    Renders artist dashboard with products, orders, and total income.
+    Args:
+        request (Request) → Current request.
+        db (Session) → Database session.
+        user_auth → Result of is_artist dependency.
+    Returns: 
+        TemplateResponse or RedirectResponse.
+    """
     if isinstance(user_auth, RedirectResponse): return user_auth
     
     user_id = request.session["user"]["id"]
@@ -45,12 +84,27 @@ async def artist_dashboard(request: Request, db: Session = Depends(get_db), user
 
 @router.get("/products/new", response_class=HTMLResponse)
 async def add_product_step1_page(request: Request, user_auth = Depends(is_artist)):
+    """
+    Displays form to create a new product.
+    Args:
+        request (Request) → Current request.
+        user_auth → Result of is_artist dependency.
+    Returns: 
+        TemplateResponse or RedirectResponse.
+    """
     if isinstance(user_auth, RedirectResponse): return user_auth
     return templates.TemplateResponse("artist/add_product_step1.html", {"request": request})
 
 @router.post("/products/new")
 async def add_product_step1_submit(request: Request, name: str = Form(...), category: str = Form(...), artist_notes: str = Form(...), image: UploadFile = File(...)):
-    # ... file saving logic is correct ...
+    """
+    Handles product creation step 1, saves uploaded image, and stores product data in session.
+    Args:
+        name (str), category (str), artist_notes (str)
+        image (UploadFile)
+    Returns: 
+        RedirectResponse to review page.
+    """
     timestamp = int(time.time())
     file_extension = image.filename.split(".")[-1]
     image_filename = f"product_{timestamp}_{name.replace(' ','_')}.{file_extension}"
@@ -59,58 +113,90 @@ async def add_product_step1_submit(request: Request, name: str = Form(...), cate
         shutil.copyfileobj(image.file, file_object)
 
     request.session["product_creation_data"] = {"name": name, "category": category, "artist_notes": artist_notes, "image_filename": image_filename}
-    
-    # === URL FIX #1 ===
     return RedirectResponse(url="/artist/manage/products/review", status_code=303)
 
 @router.get("/products/review", response_class=HTMLResponse)
 async def add_product_step2_page(request: Request, user_auth = Depends(is_artist)):
+    """
+    Displays product review page with AI-generated description and price suggestion.
+    Args:
+        request (Request) → Current request.
+        user_auth → Result of is_artist dependency.
+    Returns: 
+        TemplateResponse or RedirectResponse.
+    """
     if isinstance(user_auth, RedirectResponse): return user_auth
-    
     product_data = request.session.get("product_creation_data")
     if not product_data:
         flash(request, "Session expired. Please start again.", "warning")
-        # === URL FIX #2 ===
         return RedirectResponse(url="/artist/manage/products/new", status_code=303)
-
     ai_description = services.ai_service.generate_product_description(name=product_data["name"], category=product_data["category"], artist_notes=product_data["artist_notes"])
     ai_price_suggestion = services.ai_service.suggest_product_price(name=product_data["name"], category=product_data["category"], artist_notes=product_data["artist_notes"])
-
     context = {"request": request, "product_data": product_data, "ai_description": ai_description, "ai_price_suggestion": ai_price_suggestion}
     return templates.TemplateResponse("artist/add_product_step2.html", context)
 
 @router.post("/products/save")
 async def save_product(request: Request, db: Session = Depends(get_db), ai_generated_description: str = Form(...), price_usd: float = Form(...), stock: int = Form(...), name: str = Form(...), category: str = Form(...), artist_notes: str = Form(...), image_filename: str = Form(...)):
-    # ... logic is correct ...
+    """
+    Finalizes product creation and saves it to the database.
+    Args:
+        request (Request) → Current request.
+        db (Session) → Database session.
+        ai_generated_description (str), price_usd (float), stock (int)
+        name (str), category (str), artist_notes (str), image_filename (str)
+    Returns: 
+        RedirectResponse to dashboard.
+    """
     user_session = request.session.get("user")
     owner_id = user_session["id"]
     crud.create_product(db=db, owner_id=owner_id, name=name, category=category, artist_notes=artist_notes, ai_description=ai_generated_description, price=price_usd, stock=stock, image_filename=image_filename)
     if "product_creation_data" in request.session:
         del request.session["product_creation_data"]
-
-    # === URL FIX #3 ===
     return RedirectResponse(url="/artist/manage/dashboard?tab=products", status_code=303)
 
 @router.post("/orders/update/{order_id}")
 async def update_order(request: Request, order_id: int, db: Session = Depends(get_db), user_auth = Depends(is_artist), status: models.OrderStatus = Form(...)):
+    """
+    Updates the status of an order belonging to the artist.
+    Args:
+        order_id (int)
+        status (OrderStatus)
+    Returns: 
+        RedirectResponse.
+    """
     if isinstance(user_auth, RedirectResponse): return user_auth
     artist_id = request.session["user"]["id"]
     crud.update_order_status(db, order_id, artist_id, status)
-    # === URL FIX #4 ===
     return RedirectResponse(url="/artist/manage/dashboard", status_code=303)
 
 @router.get("/profile/edit", response_class=HTMLResponse)
 async def edit_artist_profile_page(request: Request, db: Session = Depends(get_db)):
+    """
+    Displays profile editing form for the artist.
+    Args:
+        request (Request) → Current request.
+        db (Session) → Database session. 
+    Returns: 
+        TemplateResponse or RedirectResponse.
+    """
     user_session = request.session.get("user")
     if not user_session or user_session.get("role") != "artist":
         return RedirectResponse(url="/login", status_code=303)
-
     artist = db.query(models.User).filter(models.User.id == user_session["id"]).first()
     return templates.TemplateResponse("artist/edit_profile.html", {"request": request, "artist": artist})
 
 @router.post("/profile/edit")
 async def handle_edit_artist_profile(request: Request, db: Session = Depends(get_db), studio_name: str = Form(...), location: str = Form(...), phone_contact: str = Form(...), skills: str = Form(...), bio: str = Form(...), profile_picture: UploadFile = File(None)):
-    # ... logic is correct ...
+    """
+    Handles updating artist profile details and profile picture upload.
+    Args:
+        request (Request) → Current request.
+        db (Session) → Database session.
+        studio_name (str), location (str), phone_contact (str), skills (str), bio (str)
+        profile_picture (UploadFile, optional)  → New profile picture file.
+    Returns: 
+        RedirectResponse to dashboard.
+    """
     user_session = request.session.get("user")
     artist = db.query(models.User).filter(models.User.id == user_session["id"]).first()
     artist.studio_name = studio_name
